@@ -36,6 +36,14 @@ public class User {
 	@JsonIgnore
 	@Column(name = "password")
 	private String password;
+	
+	@JsonIgnore
+	@Column(name = "accessToken")
+	private String accessToken;
+	
+	@JsonIgnore
+	@Column(name = "refreshToken")
+	private String refreshToken;
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = Role.class)
 	@JoinTable(name = "user_role",

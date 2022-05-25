@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.constant.CommonMessage;
 import com.example.demo.exception.model.UsernameExistsException;
 import com.example.demo.exception.model.UsernamePasswordInputException;
+import com.example.demo.model.User;
 import com.example.demo.request.LoginRequest;
+import com.example.demo.request.RefreshTokenRequest;
 import com.example.demo.request.RegisterRequest;
 import com.example.demo.response.LoginResponse;
+import com.example.demo.response.RefreshTokenResponse;
 import com.example.demo.service.UserService;
+import com.example.demo.service.impl.UserDetailServiceImpl;
 import com.example.demo.userdetail.CustomUserDetail;
 import com.example.demo.utils.JwtTokenProvider;
 
@@ -35,6 +41,9 @@ public class AuthController {
 	
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	UserDetailServiceImpl userDetailServiceImpl;
 	
 	@RequestMapping(path = "/register", method = RequestMethod.POST)
 	public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
@@ -56,16 +65,33 @@ public class AuthController {
 		
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Trả về jwt cho người dùng.
 		CustomUserDetail customUserDetail = (CustomUserDetail) authentication.getPrincipal();
-        String jwt = tokenProvider.generateToken(customUserDetail);
+		
+		User user = userService.updateTokenUserByLogin(customUserDetail);
         
         LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setAccessToken(jwt);
-        loginResponse.setUser(customUserDetail.getUser());
+        loginResponse.setAccessToken(user.getAccessToken());
+        loginResponse.setRefreshToken(user.getRefreshToken());
+        loginResponse.setUser(user);
         loginResponse.setTokenType("Bearber");
         
         return new ResponseEntity<>(loginResponse, HttpStatus.OK);
 	}
 
+	@PostMapping("/refreshToken")
+	public ResponseEntity<?> refeshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
+		String refreshToken = refreshTokenRequest.getRefreshToken();
+		
+		try {
+			User user = userService.updateTokenUserByRefreshToken(refreshToken);
+			RefreshTokenResponse refreshTokenResponse = new RefreshTokenResponse();
+			refreshTokenResponse.setAccessToken(user.getAccessToken());
+			refreshTokenResponse.setRefeshToken(user.getRefreshToken());
+			
+			return new ResponseEntity<>(refreshTokenResponse, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
+		}
+		
+	}
 }

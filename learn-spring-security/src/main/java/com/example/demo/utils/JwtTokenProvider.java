@@ -3,7 +3,9 @@ package com.example.demo.utils;
 import java.util.Date;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import com.example.demo.model.User;
 import com.example.demo.userdetail.CustomUserDetail;
 
 import io.jsonwebtoken.Claims;
@@ -21,15 +23,27 @@ public class JwtTokenProvider {
 	private static final String JWT_KEY = "truong";
 
 	private static final Long JWT_EXPIRATION = 1000000L;
+	
+	private static final Long REFRESH_TOKEN_EXPIRATION = 10000000L;
 
-	public String generateToken(CustomUserDetail customUserDetail) {
+	public String generateAccessToken(User user) {
 		Date now = new Date();
 		Date expire = new Date(now.getTime() + JWT_EXPIRATION);
 
 		return Jwts.builder().setIssuedAt(now).setExpiration(expire)
-				.setSubject(customUserDetail.getUser().getUsername())
-				.signWith(SignatureAlgorithm.HS512, JWT_KEY).compact();
+				.setSubject(user.getUsername()).signWith(SignatureAlgorithm.HS512, JWT_KEY)
+				.compact();
 	}
+	
+	public String generateRefreshToken(User user) {
+		Date now = new Date();
+		Date expire = new Date(now.getTime() + REFRESH_TOKEN_EXPIRATION);
+		
+		return Jwts.builder().setIssuedAt(now).setExpiration(expire)
+				.setSubject(user.getUsername()).signWith(SignatureAlgorithm.HS512, JWT_KEY)
+				.compact();
+	}
+	
 
 	public String getUsernameFromJwt(String token) {
 		Claims claims = Jwts.parser().setSigningKey(JWT_KEY).parseClaimsJws(token).getBody();
@@ -52,5 +66,18 @@ public class JwtTokenProvider {
 			log.error(e.getMessage());
 		}
 		return false;
+	}
+
+	public boolean isExpiredToken(String token) {
+		if (!StringUtils.hasText(token)) {
+			return true;
+		}
+		
+		try {
+			Jwts.parser().setSigningKey(JWT_KEY).parseClaimsJws(token);
+			return false;
+		} catch (ExpiredJwtException ex) {
+			return true;
+		}
 	}
 }

@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DATABASE_HOST}:5432/learn-security
+    url: jdbc:postgresql://localhost:5455/learn-security
     username: postgres
     password: postgres
   jpa:
@@ -10,3 +10,6 @@ spring:
     generate-ddl: true
     properties:      hibernate: 
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        
+  security:    resource:
+      tokenInfoUri: http://localhost:9000/oauth/check_token
