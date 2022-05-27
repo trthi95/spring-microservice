@@ -18,7 +18,8 @@ import com.example.demo.service.impl.UserDetailServiceImpl;
 import com.example.demo.userdetail.CustomUserDetail;
 import com.example.demo.utils.JwtTokenProvider;
 
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+//public class JwtAuthenticationFilter {
+	public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	@Autowired
 	private JwtTokenProvider tokenProvider;
@@ -44,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 			}
 		}
-		
+
 		filterChain.doFilter(request, response);
 
 	}

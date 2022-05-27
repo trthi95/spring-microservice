@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -18,10 +19,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 
-@Entity
+@Entity	
 @Table(name = "users")
 @Data
-public class User {
+public class User implements Serializable {
 
 	@Id
 	@Column(name = "id")
